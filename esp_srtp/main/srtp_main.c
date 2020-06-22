@@ -22,7 +22,7 @@ static inline void app_perror(const char *what, srtp_err_status_t status) {
 
 void app_main()
 {
-	const BaseType_t res = xTaskCreate(srtp_test_task, "srtp_test_task", 2048, NULL, 10, NULL);
+	const BaseType_t res = xTaskCreate(srtp_test_task, "srtp_test_task", 4096, NULL, 10, NULL);
 	if (pdTRUE != res)
 		ESP_LOGE(APPTAG, "xTaskCreate failed.");
 }
