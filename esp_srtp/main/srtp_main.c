@@ -111,46 +111,43 @@ esp_err_t srtp_test(void)
 	status = srtp_create(&srtp_snd, &policy);
 	if (srtp_err_status_ok == status) {
 
-		do {
-			len = 28;
-			status = srtp_protect(srtp_snd, srtp_plaintext, &len);
-			if (srtp_err_status_ok != status || (len != 38)) {
-				app_perror("srtp_protect", status);
-				break;
-			}
+		status = srtp_create(&srtp_recv, &policy);
+		if (srtp_err_status_ok == status) {
 
-			if (0 != memcmp(srtp_plaintext, srtp_ciphertext, len)) {
-				ESP_LOGE(APPTAG, "Packet validation failed.");
-				break;
-			}
+			do {
+				len = 28;
+				status = srtp_protect(srtp_snd, srtp_plaintext, &len);
+				if (srtp_err_status_ok != status || (len != 38)) {
+					app_perror("srtp_protect", status);
+					break;
+				}
 
-			status = srtp_create(&srtp_recv, &policy);
-			if (srtp_err_status_ok == status) {
+				if (0 != memcmp(srtp_plaintext, srtp_ciphertext, len)) {
+					ESP_LOGE(APPTAG, "Packet validation failed.");
+					break;
+				}
 
-				do {
-					status = srtp_unprotect(srtp_recv, srtp_ciphertext, &len);
-					if (srtp_err_status_ok != status) {
-						app_perror("srtp_unprotect", status);
-						break;
-					}
+				status = srtp_unprotect(srtp_recv, srtp_ciphertext, &len);
+				if (srtp_err_status_ok != status) {
+					app_perror("srtp_unprotect", status);
+					break;
+				}
 
-					if (0 != memcmp(srtp_ciphertext, srtp_plaintext_ref, len)) {
-						ESP_LOGE(APPTAG, "Packet validation failed.");
-						break;
-					}
+				if (0 != memcmp(srtp_ciphertext, srtp_plaintext_ref, len)) {
+					ESP_LOGE(APPTAG, "Packet validation failed.");
+					break;
+				}
 
-					ret = ESP_OK;
+				ret = ESP_OK;
 
-				} while (0);
+			} while (0);
 
-				status = srtp_dealloc(srtp_recv);
-				if (srtp_err_status_ok != status)
-					app_perror("recv srtp_dealloc", status);
+			status = srtp_dealloc(srtp_recv);
+			if (srtp_err_status_ok != status)
+				app_perror("recv srtp_dealloc", status);
 
-			} else
-				app_perror("recv srtp_create", status);
-
-		} while (0);
+		} else
+			app_perror("recv srtp_create", status);
 
 		status = srtp_dealloc(srtp_snd);
 		if (srtp_err_status_ok != status)
